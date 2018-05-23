@@ -1,0 +1,74 @@
+
+
+Hadoop的体系结构（非常重要）：都是主从结构
+===============================
+
+一、HDFS的体系结构
+	1、NameNode：主节点
+			http://192.168.157.111:50070
+	
+		（1）职责：管理维护HDFS
+		           接收客户端的请求：上传、下载、创建目录等等
+				   维护了两个非常重要的文件：edits文件  -----> 记录操作日志
+				                             fsimage文件 ----> HDFS的元信息
+											 
+		（2）HDFS操作日志：edits文件
+			(*)位置：find . -name edits*
+				  最新的操作日志：edits_inprogress****
+				  
+			(*)都是二进制
+			(*)HDFS提供一个工具：edits viewer 日志查看器 ----> XML
+			(*)Demo:
+			    hdfs dfs -mkdir /mydemo
+				hdfs oev -i edits_inprogress_0000000000000000106 -o ~/a.xml
+				
+		（3）HDFS的元信息：fsimage文件
+			(*) 就跟edits文件在一起
+			(*) 记录：数据块的位置、冗余信息
+			(*) 也是一个二进制
+			(*) HDFS提供一个 image viewer ----> 文本或者xml
+				hdfs oiv -i fsimage_0000000000000000005 -o ~/b.xml -p XML
+				
+		（4）问题：edits文件和fsimage文件，哪个文件提现了HDFS最新的状态？
+	
+	2、DataNode：保存数据块
+		（1）1.x  64M    2.x  128M
+		（2）位置：find . -name blk*
+		（3）Demo：上传一个大于128M的文件
+				hdfs dfs -put hadoop-2.7.3.tar.gz /tools
+				查看数据块的文件
+				
+		（4）一般原则：数据块的冗余度一般跟数据节点个数一致，最大不要超过3
+		               在生产环境下，至少两个数据节点
+				
+	
+	3、SecondaryNameNode:第二名称节点
+		（*）作用：把edits中最新的状态信息合并到fsimage文件中
+		（*）合并过程
+		（*）Web Console：http://192.168.157.111:50090
+		（*）检查点：checkpoint
+			补充一个知识：Oracle数据库中也有检查点，如果发生检查点，会以最高优先级唤醒数据库写进程（DBWn）把内存中的脏数据写到数据文件上（持久化）
+	
+二、Yarn的体系结构
+	日志：
+	18/04/07 20:24:34 INFO client.RMProxy: Connecting to ResourceManager at bigdata111/192.168.157.111:8032
+
+
+	1、主从结构：ResourceManager、NodeManager
+	
+	2、调度MapReduce任务过程
+	3、资源分配的方式（3种）
+
+三、HBase的体系结构
+	1、主节点：HMaster、RegionServer
+	2、画图
+
+四、（今晚了解）主从结构的单点故障和解决方案
+
+
+
+
+
+
+
+
