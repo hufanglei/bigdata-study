@@ -1,0 +1,185 @@
+
+
+#NoSQL数据库之：HBase 
+===============================================
+##一、NoSQL的基础、常见的NoSQL数据库
+	- 1、not only sql
+	- 2、回顾：关系型数据库: Oracle、MySQL等等 -----> 面向行：适合insert update delete
+	- 3、常见的NoSQL数据库
+		（*）基于Key-Value模型：Redis（内存）-----> 前身：MemCached（不足：不支持持久化）
+		（*）面向列的模型：HBase、Cassandra------> 适合 select
+		（*）基于文档型：MongoDB  -----> 文档：BSON文档 是json的二进制
+			举例：设计一个数据库，保存电影的信息
+
+##二、HBase的表结构和体系结构
+
+##三、搭建HBase环境
+	tar -zxvf hbase-1.3.1-bin.tar.gz -C ~/training/
+	设置环境变量  vi ~/.bash_profile
+			HBASE_HOME=/root/training/hbase-1.3.1
+			export HBASE_HOME
+
+			PATH=$HBASE_HOME/bin:$PATH
+			export PATH
+	source ~/.bash_profile
+
+	- 1、本地模式:  不需要HDFS，保存在Linux的文件系统
+	    bigdata111配置
+		
+		建个目录: mkdir data
+		修改文件：hbase-env.sh
+			export JAVA_HOME=/root/training/jdk1.8.0_144
+		
+		核心配置文件:  conf/hbase-site.xml
+			<property>
+			  <name>hbase.rootdir</name>
+			  <value>file:///root/training/hbase-1.3.1/data</value>
+			</property>
+
+		启动HBase：start-hbase.sh
+		starting master, logging to /root/training/hbase-1.3.1/logs/hbase-root-master-bigdata111.out
+		只有HMaster
+
+		
+	- 2、伪分布模式（bigdata111）
+		修改文件：hbase-env.sh
+			HBASE_MANAGES_ZK	true  ---> 使用HBase自带的ZK
+			
+		核心配置文件:  conf/hbase-site.xml
+		
+			<!--HBase的数据保存在HDFS对应目录-->
+			<property>
+			  <name>hbase.rootdir</name>
+			  <value>hdfs://192.168.157.111:9000/hbase</value>
+			</property>	
+
+			<!--是否是分布式环境-->
+			<property>
+			  <name>hbase.cluster.distributed</name>
+			  <value>true</value>
+			</property>			
+
+			<!--配置ZK的地址-->
+			<property>
+			  <name>hbase.zookeeper.quorum</name>
+			  <value>192.168.157.111</value>
+			</property>				
+
+			<!--冗余度-->
+			<property>
+			  <name>dfs.replication</name>
+			  <value>1</value>
+			</property>	
+			
+		文件regionservers：配置从节点地址
+			192.168.157.111
+			
+	- 3、全分布模式：bigdata112  bigdata113  bigdata114
+
+		修改文件：hbase-env.sh
+			export JAVA_HOME=/root/training/jdk1.8.0_144
+			HBASE_MANAGES_ZK	true  ---> 使用HBase自带的ZK
+
+		核心配置文件:  conf/hbase-site.xml
+		
+			<!--HBase的数据保存在HDFS对应目录-->
+			<property>
+			  <name>hbase.rootdir</name>
+			  <value>hdfs://192.168.157.112:9000/hbase</value>
+			</property>	
+
+			<!--是否是分布式环境-->
+			<property>
+			  <name>hbase.cluster.distributed</name>
+			  <value>true</value>
+			</property>			
+
+			<!--配置ZK的地址-->
+			<property>
+			  <name>hbase.zookeeper.quorum</name>
+			  <value>192.168.157.112</value>
+			</property>				
+
+			<!--冗余度-->
+			<property>
+			  <name>dfs.replication</name>
+			  <value>2</value>
+			</property>	
+
+			<!--主节点和从节点允许的最大时间误差-->
+			<property>
+			  <name>hbase.master.maxclockskew</name>
+			  <value>180000</value>
+			</property>	
+			
+		文件regionservers：配置从节点地址
+			192.168.157.113
+			192.168.157.114
+			
+		复制到其他节点上
+			scp -r hbase-1.3.1/ root@bigdata113:/root/training
+			scp -r hbase-1.3.1/ root@bigdata114:/root/training
+	
+##四、HBase在ZK中保存的数据和HA
+	
+
+	- 2、在bigdata113再手动启动一个HMaster
+		hbase-daemon.sh start master
+
+##五、操作HBase
+
+	- 1、命令行
+		创建表: create 'student','info','grade'
+	
+	
+	- 2、Java API
+	
+	- 3、Web Console: 端口 16010
+
+##六、数据保存的过程（重要：一定要注意Region分裂）
+
+##七、HBase的过滤器（Java程序）：实现复杂的查询，类似where条件
+
+##八、HBase上的MapReduce
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
